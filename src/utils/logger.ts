@@ -1,43 +1,39 @@
-import chalk from "chalk";
-import gradient from "gradient-string";
+import "colors"
 
 export class Logger {
-    private static tag = "Atomic";
+    static tag = "Atomic"
 
-    private static purpleLabel(): string {
-        const colors = ["#d6b3ff", "#b57cff", "#8e44ff", "#5a1aff"];
-        return gradient(colors)(`[${this.tag}]`);
+    static purpleLabel() {
+        return `[${this.tag}]`.magenta
     }
 
-    private static debugLabel(): string {
-        const colors = ["#2d2e2eff", "#494949ff", "rgba(129, 131, 131, 1)", "#c4c3c3ff"];
-        return gradient(colors)(`[DEBUG]`);
+    static debugLabel() {
+        return `[DEBUG]`.gray
     }
 
-    private static timestamp(): string {
-        const now = new Date().toLocaleString();
-        return chalk.gray(now);
+    static timestamp() {
+        const now = new Date().toLocaleString()
+        return now.gray
     }
 
-
-    static log(message: string) {
-        console.log(`${this.timestamp()} ${this.purpleLabel()} ${chalk.whiteBright(message)}`);
+    static log(message) {
+        console.log(`${this.timestamp()} ${this.purpleLabel()} ${message.white}`)
     }
 
-    static warn(message: string) {
-        console.warn(`${this.timestamp()} ${this.purpleLabel()} ${chalk.yellow(message)}`);
+    static warn(message) {
+        console.warn(`${this.timestamp()} ${this.purpleLabel()} ${message.yellow}`)
     }
 
-    static error(message: string) {
-        console.error(`${this.timestamp()} ${this.purpleLabel()} ${chalk.redBright(message)}`);
+    static error(message) {
+        console.error(`${this.timestamp()} ${this.purpleLabel()} ${message.red}`)
     }
 
-    static success(message: string) {
-        console.log(`${this.timestamp()} ${this.purpleLabel()} ${chalk.greenBright(message)}`);
+    static success(message) {
+        console.log(`${this.timestamp()} ${this.purpleLabel()} ${message.green}`)
     }
 
-    static debug(message: string, debug = false) {
-        if (!debug) return;
-        console.log(`${this.timestamp()} ${this.purpleLabel()} ${this.debugLabel()} ${chalk.hex("#a3f3ff")(message)}`);
+    static debug(message, debug = false) {
+        if (!debug) return
+        console.log(`${this.timestamp()} ${this.purpleLabel()} ${this.debugLabel()} ${message.cyan}`)
     }
 }

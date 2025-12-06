@@ -12,7 +12,7 @@ export enum AuthenticationType {
 export const realmAuth = async (options: ClientOptions) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const auth = await options.authflow.getXboxToken(config.parties.realm, true);
+            const token = options.tokens.bedrock
             if (options.inviteCode) await acceptInvite(options.inviteCode!);
             await OptIn(options);
 
@@ -22,7 +22,7 @@ export const realmAuth = async (options: ClientOptions) => {
                 const fetchResponse = await fetch(config.endpoints.address(realmId), {
                     method: "GET",
                     headers: {
-                        Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
+                        Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
                         ...config.realmHeaders
                     }
                 });
@@ -43,7 +43,7 @@ export const realmAuth = async (options: ClientOptions) => {
                 const fetchResponse = await fetch(config.endpoints.acceptInvite(code), {
                     method: "POST",
                     headers: {
-                        Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
+                        Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
                         ...config.realmHeaders
                     }
                 });
@@ -84,12 +84,24 @@ interface Profile {
 
 export const authenticate = async (client: Client, options: ClientOptions) => {
     try {
-        const authflow = options.authflow;
+        const token = options.tokens.bedrock;
 
+        const headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'MCPE/UWP',
+            Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`
+        }
+
+        const response = await fetch("https://multiplayer.minecraft.net/authentication", {
+            method: 'POST',
+            headers,
+            //@ts-ignore
+            body: JSON.stringify({ identityPublicKey: client.clientX509 })
+        })
+
+        const { chain: chains } = await response.json()
         //@ts-ignore
-        const chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch((e: any) => {
-            throw e;
-        });
+
 
         const jwt = chains[1];
         const [_, payload, __] = jwt.split('.').map((k: any) => Buffer.from(k, 'base64'));
@@ -116,7 +128,7 @@ function postAuthenticate(client: any, profile: Profile, chains: string) {
 }
 
 export async function OptIn(options: any) {
-    const auth = options.authflow ? await options.authflow.getXboxToken(config.parties.realm, true) : { ...options.auth };
+    const tokens = options.tokens.realms
     let attempt = 0;
 
     while (true) {
@@ -130,7 +142,7 @@ export async function OptIn(options: any) {
                 method: "POST",
                 headers: {
                     ...config.realmHeaders,
-                    Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
+                    Authorization: `XBL3.0 x=${tokens.userHash};${tokens.XSTSToken}`,
                 },
                 body: JSON.stringify({
                     autostories: true,
