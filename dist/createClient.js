@@ -69,6 +69,7 @@ exports.createClient = createClient;
 async function connect(client) {
     if (client.options.transport === "nethernet") {
         if (client.options.useSignalling) {
+            client.nethernet = {};
             client.nethernet.signalling = new signal_1.NethernetSignal(
             //@ts-ignore
             client.connection.nethernet.networkId, client.options.tokens, client.options.version);

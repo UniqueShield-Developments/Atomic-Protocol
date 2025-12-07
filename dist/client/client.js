@@ -241,6 +241,7 @@ class Client extends connection_1.Connection {
     onPlayStatus(statusPacket) {
         if (this.status === types_1.clientStatus.Initializing && statusPacket.status === 'player_spawn') {
             this.setStatus(types_1.clientStatus.Initialized);
+            this.emit("spawn");
             if (this.entityId)
                 this.on('start_game', () => this.write('set_local_player_as_initialized', { runtime_entity_id: this.entityId }));
             else

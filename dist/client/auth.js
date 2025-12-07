@@ -14,7 +14,7 @@ var AuthenticationType;
 const realmAuth = async (options) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const token = options.tokens.bedrock;
+            const token = options.tokens.realms;
             if (options.inviteCode)
                 await acceptInvite(options.inviteCode);
             await OptIn(options);

@@ -1,6 +1,7 @@
+import "colors";
 export declare class Logger {
     private static tag;
-    private static purpleLabel;
+    private static label;
     private static debugLabel;
     private static timestamp;
     static log(message: string): void;
