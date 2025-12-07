@@ -32,12 +32,10 @@
     "release:full": "bun tsc || true && git commit -m \"Prepare Release\" || true && npm version minor && git push && git push --tags && npm publish"
   },
   "dependencies": {
-    "@roamhq/wrtc": "^0.9.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/uuid-1345": "^0.99.25",
-    "atomic-net": "^1.0.1",
-    "chalk": "^5.6.2",
-    "gradient-string": "^3.0.0",
+    "atomic-net": "github:UniqueShield-Developments/Atomic-Nethernet",
+    "colors": "^1.4.0",
     "jsonwebtoken": "^9.0.2",
     "prismarine-auth": "github:LucienHH/prismarine-auth#playfab",
     "prismarine-nbt": "^2.7.0",
@@ -45,6 +43,7 @@
     "raknet-native": "^1.2.3",
     "snappy": "^7.2.2",
     "uuid-1345": "^1.0.2",
+    "wrtc": "^0.4.7",
     "ws": "^8.18.3",
     "xbox-rta": "^2.1.0"
   },

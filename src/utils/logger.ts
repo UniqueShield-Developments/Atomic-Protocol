@@ -1,43 +1,39 @@
-import chalk from "chalk";
-import gradient from "gradient-string";
+import "colors"
 
 export class Logger {
-    private static tag = "Atomic";
+    private static tag = "Atomic"
 
-    private static purpleLabel(): string {
-        const colors = ["#d6b3ff", "#b57cff", "#8e44ff", "#5a1aff"];
-        return gradient(colors)(`[${this.tag}]`);
+    private static label(): string {
+        return `[${this.tag}]`
     }
 
     private static debugLabel(): string {
-        const colors = ["#2d2e2eff", "#494949ff", "rgba(129, 131, 131, 1)", "#c4c3c3ff"];
-        return gradient(colors)(`[DEBUG]`);
+        return `[DEBUG]`.gray
     }
 
     private static timestamp(): string {
-        const now = new Date().toLocaleString();
-        return chalk.gray(now);
+        const now = new Date().toLocaleString()
+        return now.gray
     }
 
-
     static log(message: string) {
-        console.log(`${this.timestamp()} ${this.purpleLabel()} ${chalk.whiteBright(message)}`);
+        console.log(`${this.timestamp()} ${this.label()} ${message.white}`)
     }
 
     static warn(message: string) {
-        console.warn(`${this.timestamp()} ${this.purpleLabel()} ${chalk.yellow(message)}`);
+        console.warn(`${this.timestamp()} ${this.label()} ${message.yellow}`)
     }
 
     static error(message: string) {
-        console.error(`${this.timestamp()} ${this.purpleLabel()} ${chalk.redBright(message)}`);
+        console.error(`${this.timestamp()} ${this.label()} ${message.red}`)
     }
 
     static success(message: string) {
-        console.log(`${this.timestamp()} ${this.purpleLabel()} ${chalk.greenBright(message)}`);
+        console.log(`${this.timestamp()} ${this.label()} ${message.green}`)
     }
 
     static debug(message: string, debug = false) {
-        if (!debug) return;
-        console.log(`${this.timestamp()} ${this.purpleLabel()} ${this.debugLabel()} ${chalk.hex("#a3f3ff")(message)}`);
+        if (!debug) return
+        console.log(`${this.timestamp()} ${this.label()} ${this.debugLabel()} ${message.cyan}`)
     }
 }
