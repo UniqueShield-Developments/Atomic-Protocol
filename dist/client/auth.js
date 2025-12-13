@@ -111,10 +111,11 @@ const authenticate = async (client, options) => {
                     Authorization: `XBL3.0 x=${authflow.bedrock.userHash};${authflow.bedrock.XSTSToken}`
                 },
                 //@ts-ignore
-                body: JSON.stringify({ clientX509: client.clientX509 })
+                body: JSON.stringify({ identityPublicKey: client.clientX509 })
             });
             if (!response.ok)
                 throw errors_1.Errors.noTokens();
+            chains = (await response.json()).chain;
         }
         const jwt = chains[1];
         const [_, payload, __] = jwt.split('.').map((k) => Buffer.from(k, 'base64'));
