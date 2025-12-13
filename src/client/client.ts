@@ -161,6 +161,7 @@ export class Client extends Connection {
                 break;
             default:
                 if (this.status !== clientStatus.Initializing && this.status !== clientStatus.Initialized) {
+                    this.status = clientStatus.Initialized // sometimes the status is not changed to initialized
                     console.error(`Can't accept ${des.data.name}, client not authenticated yet : ${this.status}`);
                     break;
                 }
