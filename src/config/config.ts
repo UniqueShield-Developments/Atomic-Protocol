@@ -1,13 +1,17 @@
 
 export const config = {
     debug: false,
-    protocol: 860,
-    minecraftVersion: "1.21.124",
+    protocol: 898,
+    minecraftVersion: "1.21.130",
     deviceModel: "AtomicTS",
     connectTimeout: 9000,
     autoInitPlayer: true,
+
+    //Packets need fixing
     ignoredPackets: [
-        0x91
+        // 0x91, //145
+        // 0xC0, //192
+        // 0x4c, //76
     ],
 
     parties: {
@@ -18,7 +22,7 @@ export const config = {
         "Cache-Control": "no-cache",
         Charset: "utf-8",
         "Content-Type": "application/json",
-        "Client-Version": "1.21.124",
+        "Client-Version": "1.21.130",
         "User-Agent": "MCPE/UWP",
         "Accept-Language": "en-US",
         "Accept-Encoding": "gzip, deflate, br"
@@ -26,7 +30,8 @@ export const config = {
     endpoints: {
         worlds: "https://pocket.realms.minecraft.net/worlds",
         address: (realmId: number) => `https://pocket.realms.minecraft.net/worlds/${realmId}/join`,
-        acceptInvite: (code: string) => `https://bedrock.frontendlegacy.realms.minecraft-services.net/invites/v1/link/accept/${code}`
+        acceptInvite: (code: string) => `https://bedrock.frontendlegacy.realms.minecraft-services.net/invites/v1/link/accept/${code}`,
+        authenticate: `https://multiplayer.minecraft.net/authentication`
     }
 };
 
@@ -36,5 +41,4 @@ export const defaultOptions = {
     autoInitPlayer: true,
     connectTimeout: 9000,
     packets: [],
-
 };

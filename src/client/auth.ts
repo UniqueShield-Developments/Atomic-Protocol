@@ -1,5 +1,6 @@
+import { Authflow } from "prismarine-auth";
 import { config } from "../config/config";
-import { ClientOptions } from "../types";
+import { ClientOptions, Token } from "../types";
 import { Errors } from "../utils/errors";
 import { Logger } from "../utils/logger";
 import { Client } from "./client";
@@ -12,7 +13,14 @@ export enum AuthenticationType {
 export const realmAuth = async (options: ClientOptions) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const token = options.tokens.realms
+            //Conditional auth token acquisition
+            const authflow = options.authflow as any;
+            const usesAuthflow = typeof authflow?.getXboxToken === "function";
+            const auth = usesAuthflow
+                ? await authflow.getXboxToken(config.parties.realm, true)
+                : authflow.realms ?? authflow;
+            if (!auth?.XSTSToken || !auth?.userHash) throw Errors.noTokens();
+
             if (options.inviteCode) await acceptInvite(options.inviteCode!);
             await OptIn(options);
 
@@ -84,24 +92,29 @@ interface Profile {
 
 export const authenticate = async (client: Client, options: ClientOptions) => {
     try {
-        const token = options.tokens.bedrock;
+        const authflow = options.authflow as any;
+        const usesAuthflow = typeof authflow?.getMinecraftBedrockToken === "function";
 
-        const headers = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'MCPE/UWP',
-            Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`
-        }
+        let chains: any;
 
-        const response = await fetch("https://multiplayer.minecraft.net/authentication", {
-            method: 'POST',
-            headers,
+        if (usesAuthflow) {
             //@ts-ignore
-            body: JSON.stringify({ identityPublicKey: client.clientX509 })
-        })
+            chains = chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch((e: any) => {
+                throw e;
+            });
+        } else {
+            const response = await fetch(config.endpoints.authenticate, {
+                method: "POST",
+                headers: {
+                    ...config.realmHeaders,
+                    Authorization: `XBL3.0 x=${authflow.bedrock.userHash};${authflow.bedrock.XSTSToken}`
+                },
+                //@ts-ignore
+                body: JSON.stringify({ clientX509: client.clientX509 })
+            });
 
-        const { chain: chains } = await response.json()
-        //@ts-ignore
-
+            if (!response.ok) throw Errors.noTokens();
+        }
 
         const jwt = chains[1];
         const [_, payload, __] = jwt.split('.').map((k: any) => Buffer.from(k, 'base64'));
@@ -127,8 +140,19 @@ function postAuthenticate(client: any, profile: Profile, chains: string) {
     client.emit('session');
 }
 
+/**
+ * Opts the player into realm story features for the given realm
+ * @param options Contains the authflow/token data and the target `realmId`.
+ * @returns Promise with request outcome, including status code and optional response body when failed.
+ */
 export async function OptIn(options: any) {
-    const tokens = options.tokens.realms
+    //Conditional auth token acquisition
+    const authflow = options.authflow as any;
+    const usesAuthflow = typeof authflow?.getXboxToken === "function";
+    const auth = usesAuthflow
+        ? await authflow.getXboxToken(config.parties.realm, true)
+        : authflow.realms ?? { ...(options.authflow as Token) };
+    if (!auth.XSTSToken || !auth.userHash) throw Errors.noTokens();
     let attempt = 0;
 
     while (true) {

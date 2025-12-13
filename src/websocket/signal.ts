@@ -28,7 +28,7 @@ type ParsedIceUrl = {
 
 export class NethernetSignal extends EventEmitter {
     public networkId: string;
-    public tokens: Tokens;
+    public auth: Authflow | Tokens;
     public version: string;
     public ws: WebSocket | null = null;
     public credentials: IceServer[] = [];
@@ -36,10 +36,10 @@ export class NethernetSignal extends EventEmitter {
 
     private destroyed = false;
 
-    constructor(networkId: string, tokens: Tokens, version: string) {
+    constructor(networkId: string, authflow: Authflow | Tokens, version: string) {
         super();
         this.networkId = networkId;
-        this.tokens = tokens;
+        this.auth = authflow;
         this.version = version;
     }
 
@@ -55,10 +55,10 @@ export class NethernetSignal extends EventEmitter {
             )
         ]);
 
+        //Added Heartbeat to keep the client connected
         this.heartbeat = setInterval(() => {
             this.ws?.send(JSON.stringify({ Type: MessageType.RequestPing }));
         }, 40000);
-
     }
 
     async destroy() {
@@ -93,15 +93,25 @@ export class NethernetSignal extends EventEmitter {
             this.heartbeat = null;
         }
 
+        //Stop Heartbeat on destroy
+        if (this.heartbeat) {
+            clearInterval(this.heartbeat);
+            this.heartbeat = null;
+        }
     }
 
     async init() {
-        const xbl = await this.tokens.mcs;
+        const flow: any = this.auth as any;
+        const usesAuthflow = typeof flow?.getMinecraftBedrockServicesToken === "function";
+        const mcToken = usesAuthflow
+            ? (await flow.getMinecraftBedrockServicesToken({ version: this.version })).mcToken
+            : flow.mcToken?.token ?? flow.mcToken;
+        Logger.debug('Fetched XBL Token', config.debug);
 
         const address = `wss://signal.franchise.minecraft-services.net/ws/v1.0/signaling/${this.networkId}`;
         Logger.debug(`Connecting to Signal ${address}`, config.debug);
 
-        const ws = new WebSocket(address, { headers: { Authorization: xbl.token } });
+        const ws = new WebSocket(address, { headers: { Authorization: mcToken } });
         this.ws = ws;
 
         ws.on("open", () => this.onOpen());
