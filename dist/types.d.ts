@@ -1,9 +1,4 @@
-import { AddPlayerPacket } from "./packets/packet_add_player";
-import { EmotePacket } from "./packets/packet_emote";
-import { PlayerListPacket } from "./packets/packet_player_list";
-import { PlayerSkinPacket } from "./packets/packet_player_skin";
-import { TextPacket } from "./packets/packet_text";
-import { TickSyncPacket } from "./packets/packet_tick_sync";
+import { Authflow } from "prismarine-auth";
 export declare const clientStatus: {
     Disconnected: number;
     Connecting: number;
@@ -18,21 +13,20 @@ export interface Token {
     XSTSToken: string;
     expiresOn: string;
 }
-export interface McsToken {
-    token: string;
-    expiresOn: string;
-}
 export interface Tokens {
     realms: Token;
     bedrock: Token;
-    mcs: McsToken;
+    mcToken: {
+        token: string;
+        expiresOn: string;
+    };
 }
 export interface ClientOptions {
     host?: string;
     port?: number;
     realmId?: number;
     inviteCode?: string;
-    tokens: Tokens;
+    authflow: Authflow | Tokens;
     protocolVersion?: number;
     version?: string;
     debug?: boolean;
@@ -53,18 +47,4 @@ export declare enum CompressionAlgorithm {
     None = "none",
     Zlib = "zlib",
     Gzip = "gzip"
-}
-export interface Events {
-    session: () => void;
-    start_game: () => void;
-    connect_allowed: () => void;
-    tick_sync: (packet: TickSyncPacket) => void;
-    player_list: (packet: PlayerListPacket) => void;
-    player_skin: (packet: PlayerSkinPacket) => void;
-    add_player: (packet: AddPlayerPacket) => void;
-    text: (packet: TextPacket) => void;
-    close: () => void;
-    error: () => void;
-    disconnect: () => void;
-    emote: (packet: EmotePacket) => void;
 }

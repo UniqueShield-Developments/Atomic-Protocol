@@ -1,4 +1,4 @@
-import { Connection } from "../client/connection";
+import type { Connection } from "../client/connection";
 export default class Framer {
     packets: Array<Buffer>;
     batchHeader: number;
@@ -16,5 +16,8 @@ export default class Framer {
     addEncodedPacket(chunk: Buffer): void;
     addEncodedPackets(packets: Buffer[]): void;
     getBuffer(): Buffer<ArrayBuffer>;
-    static getPackets(buffer: Buffer): Buffer<ArrayBufferLike>[];
+    private static logPacketDebug;
+    static getPackets(buffer: Buffer, options?: {
+        label?: string;
+    }): Buffer<ArrayBufferLike>[];
 }

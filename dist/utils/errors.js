@@ -30,5 +30,8 @@ exports.Errors = {
     },
     unsupportedProtocol() {
         return new AtomicError("UNSUPPORTED_PROTOCOL", `Unsupported protocol: "NETHERNET".`);
-    }
+    },
+    noTokens() {
+        return new AtomicError("INVALID_TOKENS", "Unable to authenticate. No tokens provided.");
+    },
 };

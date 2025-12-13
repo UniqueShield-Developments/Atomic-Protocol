@@ -1,39 +1,31 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createDeserializer = exports.createSerializer = void 0;
-const protodef_1 = require("protodef");
-const protocol_json_1 = __importDefault(require("../config/protocol.json"));
-class Parser extends protodef_1.FullPacketParser {
-}
-class CustomCompiler extends protodef_1.Compiler.ProtoDefCompiler {
-    addTypesToCompilePublic(types) {
-        this.addTypesToCompile(types);
+exports.createDeserializer = exports.createSerializer = exports.Codec = void 0;
+const atomic_codec_1 = require("atomic-codec");
+class Codec {
+    createPacketBuffer({ name, params }) {
+        const def = atomic_codec_1.PacketRegistry.getByName(name);
+        if (!def)
+            throw new Error(`Unknown packet name: ${name}`);
+        const writer = new atomic_codec_1.BufferWriter();
+        writer.writeVarInt(def.id);
+        const packet = def.create(params ?? {});
+        def.serializer.encode(writer, packet);
+        return writer.final();
+    }
+    parsePacketBuffer(buf) {
+        const reader = new atomic_codec_1.BufferReader(buf);
+        const id = reader.readVarInt();
+        const def = atomic_codec_1.PacketRegistry.getById(id);
+        if (!def) {
+            return { data: { name: `unknown_${id}`, params: { raw: buf.subarray(reader.position()) } } };
+        }
+        const params = def.serializer.decode(reader);
+        return { data: { name: def.name, params } };
     }
 }
-let cachedCompiledProto = null;
-let cachedSerializer = null;
-let cachedDeserializer = null;
-const getCompiledProto = () => {
-    if (!cachedCompiledProto) {
-        const compiler = new CustomCompiler();
-        compiler.addTypesToCompilePublic(protocol_json_1.default.types);
-        compiler.addTypes(require("../datatypes/compiler").default);
-        cachedCompiledProto = compiler.compileProtoDefSync();
-    }
-    return cachedCompiledProto;
-};
-const createSerializer = () => {
-    if (!cachedSerializer)
-        cachedSerializer = new protodef_1.Serializer(getCompiledProto(), "mcpe_packet");
-    return cachedSerializer;
-};
+exports.Codec = Codec;
+const createSerializer = () => new Codec();
 exports.createSerializer = createSerializer;
-const createDeserializer = () => {
-    if (!cachedDeserializer)
-        cachedDeserializer = new Parser(getCompiledProto(), "mcpe_packet");
-    return cachedDeserializer;
-};
+const createDeserializer = () => new Codec();
 exports.createDeserializer = createDeserializer;

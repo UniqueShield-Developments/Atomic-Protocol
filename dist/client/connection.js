@@ -24,6 +24,15 @@ const serializer_1 = require("../transforms/serializer");
 const types_1 = require("../types");
 const logger_1 = require("../utils/logger");
 class Connection extends events_1.EventEmitter {
+    on(event, listener) {
+        return super.on(event, listener);
+    }
+    once(event, listener) {
+        return super.once(event, listener);
+    }
+    emit(event, ...args) {
+        return super.emit(event, ...args);
+    }
     constructor() {
         super();
         this.encryptionEnabled = false;
@@ -42,11 +51,17 @@ class Connection extends events_1.EventEmitter {
             this.sendPackets(packet, false);
         };
         this.onDecryptedPacket = (buf) => {
-            const packets = framer_1.default.getPackets(buf);
-            packets.forEach((packet) => {
-                //@ts-ignore
-                this.readPacket(packet);
-            });
+            try {
+                const packets = framer_1.default.getPackets(buf, { label: "onDecryptedPacket" });
+                packets.forEach((packet) => {
+                    //@ts-ignore
+                    this.readPacket(packet);
+                });
+            }
+            catch (err) {
+                logger_1.Logger.debug(`[Framer] failed to decode decrypted batch length=${buf.byteLength}`, config_1.config.debug);
+                this.emit("error", err);
+            }
         };
         this.serializer = (0, serializer_1.createSerializer)();
         this.deserializer = (0, serializer_1.createDeserializer)();
@@ -73,6 +88,17 @@ class Connection extends events_1.EventEmitter {
     }
     ;
     write(name, params) {
+        if (name === "command_request") {
+            params ??= {};
+            params.command ??= "";
+            params.origin ??= {};
+            params.origin.origin ??= "player";
+            params.origin.uuid ??= "00000000-0000-0000-0000-000000000000";
+            params.origin.request_id ??= "req";
+            params.origin.player_entity_id ??= 1n;
+            params.internal ??= false;
+            params.version ??= "latest";
+        }
         this.framer.reset(this);
         const packet = this.serializer.createPacketBuffer({ name, params });
         this.framer.addEncodedPacket(packet);
@@ -139,10 +165,16 @@ class Connection extends events_1.EventEmitter {
             if (this.encryptionEnabled)
                 this.decrypt(buffer.slice(1));
             else {
-                const packets = framer_1.default.decode(this, buffer);
-                for (let packet of packets) {
-                    //@ts-ignore
-                    this.readPacket(packet);
+                try {
+                    const packets = framer_1.default.decode(this, buffer);
+                    for (let packet of packets) {
+                        //@ts-ignore
+                        this.readPacket(packet);
+                    }
+                }
+                catch (err) {
+                    logger_1.Logger.debug(`[Framer] decode error batchLength=${buffer.byteLength} compression=${this.compressionAlgorithm} ready=${this.compressionReady}`, config_1.config.debug);
+                    this.emit("error", err);
                 }
             }
             ;

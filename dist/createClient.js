@@ -72,7 +72,7 @@ async function connect(client) {
             client.nethernet = {};
             client.nethernet.signalling = new signal_1.NethernetSignal(
             //@ts-ignore
-            client.connection.nethernet.networkId, client.options.tokens, client.options.version);
+            client.connection.nethernet.networkId, client.options.authflow, client.options.version);
             //@ts-ignore
             await client.nethernet.signalling.connect();
             //@ts-ignore

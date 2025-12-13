@@ -1,10 +1,18 @@
+import { Events } from 'atomic-codec';
 import { EventEmitter } from 'events';
 import { NethernetClient } from '../nethernet';
 import { RaknetClient } from '../rak';
 import Framer from '../transforms/framer';
+import { Codec } from "../transforms/serializer";
 import { CompressionAlgorithm } from '../types';
 export declare class Connection extends EventEmitter {
     #private;
+    on<K extends keyof Events & (string | symbol)>(event: K, listener: Events[K]): this;
+    on(event: string | symbol, listener: (...args: any[]) => void): this;
+    once<K extends keyof Events & (string | symbol)>(event: K, listener: Events[K]): this;
+    once(event: string | symbol, listener: (...args: any[]) => void): this;
+    emit<K extends keyof Events & (string | symbol)>(event: K, ...args: Parameters<Events[K]>): boolean;
+    emit(event: string | symbol, ...args: any[]): boolean;
     connection: RaknetClient | NethernetClient;
     encryptionEnabled: boolean;
     disableEncryption: boolean;
@@ -19,8 +27,8 @@ export declare class Connection extends EventEmitter {
     encrypt: any;
     sendQ: Buffer[];
     loop: NodeJS.Timeout;
-    serializer: any;
-    deserializer: any;
+    serializer: Codec;
+    deserializer: Codec;
     constructor();
     get status(): number;
     set status(val: number);

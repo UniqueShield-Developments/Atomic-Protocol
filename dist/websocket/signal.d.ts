@@ -1,17 +1,18 @@
 import type { IceServer } from "atomic-net";
 import { SignalStructure } from "atomic-net";
 import { EventEmitter } from "node:events";
+import { Authflow } from "prismarine-auth";
 import { WebSocket } from "ws";
 import { Tokens } from "../types";
 export declare class NethernetSignal extends EventEmitter {
     networkId: string;
-    tokens: Tokens;
+    auth: Authflow | Tokens;
     version: string;
     ws: WebSocket | null;
     credentials: IceServer[];
     private heartbeat;
     private destroyed;
-    constructor(networkId: string, tokens: Tokens, version: string);
+    constructor(networkId: string, authflow: Authflow | Tokens, version: string);
     connect(): Promise<void>;
     destroy(): Promise<void>;
     init(): Promise<void>;

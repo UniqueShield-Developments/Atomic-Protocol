@@ -1,6 +1,14 @@
-import { FullPacketParser, Serializer } from "protodef";
-declare class Parser extends FullPacketParser {
+export declare class Codec {
+    createPacketBuffer({ name, params }: {
+        name: string;
+        params: any;
+    }): Buffer<ArrayBuffer>;
+    parsePacketBuffer(buf: Buffer): {
+        data: {
+            name: string;
+            params: any;
+        };
+    };
 }
-export declare const createSerializer: () => Serializer;
-export declare const createDeserializer: () => Parser;
-export {};
+export declare const createSerializer: () => Codec;
+export declare const createDeserializer: () => Codec;

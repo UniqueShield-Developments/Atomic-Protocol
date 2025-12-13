@@ -1,4 +1,4 @@
-export type ErrorCode = "PACKET_UNKNOWN" | "NETWORK_DISCONNECTED" | "INVALID_REALM" | "INVITE_FAILED" | "INVALID_PROTOCOL" | "UNSUPPORTED_PROTOCOL" | "CREATION_FAILED";
+export type ErrorCode = "PACKET_UNKNOWN" | "NETWORK_DISCONNECTED" | "INVALID_REALM" | "INVITE_FAILED" | "INVALID_PROTOCOL" | "UNSUPPORTED_PROTOCOL" | "CREATION_FAILED" | "INVALID_TOKENS";
 export declare class AtomicError extends Error {
     readonly code: ErrorCode;
     readonly details?: Record<string, unknown>;
@@ -11,4 +11,5 @@ export declare const Errors: {
     inviteFailed(): AtomicError;
     invalidProtocol(current: number | undefined): AtomicError;
     unsupportedProtocol(): AtomicError;
+    noTokens(): AtomicError;
 };

@@ -30,7 +30,7 @@ export const realmAuth = async (options: ClientOptions) => {
                 const fetchResponse = await fetch(config.endpoints.address(realmId), {
                     method: "GET",
                     headers: {
-                        Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
+                        Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
                         ...config.realmHeaders
                     }
                 });
@@ -51,7 +51,7 @@ export const realmAuth = async (options: ClientOptions) => {
                 const fetchResponse = await fetch(config.endpoints.acceptInvite(code), {
                     method: "POST",
                     headers: {
-                        Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
+                        Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
                         ...config.realmHeaders
                     }
                 });
@@ -166,7 +166,7 @@ export async function OptIn(options: any) {
                 method: "POST",
                 headers: {
                     ...config.realmHeaders,
-                    Authorization: `XBL3.0 x=${tokens.userHash};${tokens.XSTSToken}`,
+                    Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
                 },
                 body: JSON.stringify({
                     autostories: true,
