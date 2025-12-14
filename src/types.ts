@@ -66,6 +66,9 @@ export interface ClientOptions {
     networkId?: bigint;
     transport?: string;
     useSignalling?: boolean;
+
+    retryOnUnavailableRealm?: boolean;
+    unavailableRealmRetryDelay?: number;
 }
 
 export enum CompressionAlgorithm {

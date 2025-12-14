@@ -18,23 +18,34 @@ const realmAuth = async (options) => {
             if (options.inviteCode)
                 await acceptInvite(options.inviteCode);
             await OptIn(options);
+            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             const getAddress = async (realmId) => {
-                logger_1.Logger.debug(`Fetching realm: ${realmId}'s address`, options.debug);
-                const fetchResponse = await fetch(config_1.config.endpoints.address(realmId), {
-                    method: "GET",
-                    headers: {
-                        Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
-                        ...config_1.config.realmHeaders
+                const attempts = options.retryOnUnavailableRealm ? 2 : 1;
+                const delay = options.unavailableRealmRetryDelay ?? 20000;
+                for (let attempt = 1; attempt <= attempts; attempt++) {
+                    logger_1.Logger.debug(`Fetching realm: ${realmId}'s address (attempt ${attempt})`, options.debug);
+                    const fetchResponse = await fetch(config_1.config.endpoints.address(realmId), {
+                        method: "GET",
+                        headers: {
+                            Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
+                            ...config_1.config.realmHeaders
+                        }
+                    });
+                    if (fetchResponse.ok) {
+                        const json = await fetchResponse.json();
+                        if (json.networkProtocol === "NETHERNET") {
+                            return json.address;
+                        }
+                        const [host, port] = json?.address?.split(":");
+                        return { host, port };
                     }
-                });
-                if (!fetchResponse.ok)
+                    if (fetchResponse.status === 503 && attempt < attempts) {
+                        logger_1.Logger.debug(`Realm unavailable, retrying in ${delay}ms`, options.debug);
+                        await sleep(delay);
+                        continue;
+                    }
                     throw errors_1.Errors.noRealm(fetchResponse.status, fetchResponse.statusText);
-                const json = await fetchResponse.json();
-                if (json.networkProtocol === "NETHERNET") {
-                    return json.address;
                 }
-                const [host, port] = json?.address?.split(":");
-                return { host, port };
             };
             async function acceptInvite(code) {
                 const fetchResponse = await fetch(config_1.config.endpoints.acceptInvite(code), {
