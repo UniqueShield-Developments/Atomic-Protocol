@@ -1,0 +1,80 @@
+/**
+ * TextPacket
+ * Unknown packet ID
+ * No description
+ */
+export interface TextPacket {
+    needs_translation: boolean;
+    category: "message_only" | "authored" | "parameters";
+    content: {
+        category: "message_only";
+        raw: string;
+        tip: string;
+        system_message: string;
+        text_object_whisper: string;
+        text_object_announcement: string;
+        text_object: string;
+    } | {
+        category: "authored";
+        chat: string;
+        whisper: string;
+        announcement: string;
+    } | {
+        category: "parameters";
+        translate: string;
+        popup: string;
+        jukebox_popup: string;
+    };
+    type: "raw" | "chat" | "translation" | "popup" | "jukebox_popup" | "tip" | "system" | "whisper" | "announcement" | "json_whisper" | "json" | "json_announcement";
+    payload: {
+        type: "chat";
+        source_name: string;
+        message: string;
+    } | {
+        type: "whisper";
+        source_name: string;
+        message: string;
+    } | {
+        type: "announcement";
+        source_name: string;
+        message: string;
+    } | {
+        type: "raw";
+        message: string;
+    } | {
+        type: "tip";
+        message: string;
+    } | {
+        type: "system";
+        message: string;
+    } | {
+        type: "json_whisper";
+        message: string;
+    } | {
+        type: "json";
+        message: string;
+    } | {
+        type: "json_announcement";
+        message: string;
+    } | {
+        type: "translation";
+        message: string;
+        parameters: string[];
+    } | {
+        type: "popup";
+        message: string;
+        parameters: string[];
+    } | {
+        type: "jukebox_popup";
+        message: string;
+        parameters: string[];
+    };
+    xuid: string;
+    platform_chat_id: string;
+    has_filtered_message: boolean;
+    filtered_message: {
+        has_filtered_message: "true";
+        value: string;
+    };
+}
+export declare const TextPacketInfo: import("./metadata").PacketMetadata;

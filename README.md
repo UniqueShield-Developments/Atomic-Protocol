@@ -3,31 +3,31 @@
 
 [![Official Discord](https://img.shields.io/static/v1.svg?label=OFFICIAL&message=DISCORD&color=blue&logo=discord&style=for-the-badge)](https://discord.gg/AaEqYaegE3)
 
-Atomic Protocol is a modern, efficient, and fully TypeScript-rewritten version of
-[PrismarineJS/bedrock-protocol](https://github.com/PrismarineJS/bedrock-protocol). It's built with performance and maintainability in mind.
+Atomic Protocol is a modern, efficient, and fully TypeScript-rewritten version of  
+[PrismarineJS/bedrock-protocol](https://github.com/PrismarineJS/bedrock-protocol).  
+It’s built with performance and maintainability in mind.
 
-Key points:
-- Minecraft Version: `1.21.130`
-- Written in TypeScript
-- Strongly-typed packet definitions
-- Clean API for client creation
-- No proxy or server implementation (for those, use the original [PrismarineJS/bedrock-protocol](https://github.com/PrismarineJS/bedrock-protocol))
+- ✅ Minecraft Version: `1.21.124`
+- ✅ Written in TypeScript  
+- ✅ Strongly-typed packet definitions
+- ✅ Clean API for client creation  
+- ❌ No proxy or server implementation (for those, use the original [PrismarineJS/bedrock-protocol](https://github.com/PrismarineJS/bedrock-protocol))
 
 [Our Docs](./docs/API.md)
 
 ---
 
-## Installation
+## 📦 Installation
 
 ```bash
-yarn add atomic-protocol
+bun add atomic-protocol
 # or
 npm install atomic-protocol
 ```
 
 ---
 
-## Usage
+## 🚀 Usage
 
 ```ts
 import { Client } from "atomic-protocol";
@@ -48,9 +48,9 @@ client.on("add_player", packet => {
 
 ---
 
-## Packet Type Definitions
+## 📑 Packet Type Definitions
 
-All packet structures are auto-generated from [`src/config/protocol.json`](./src/config/protocol.json) into TypeScript definitions under [`src/packets/`](./src/packets).
+All packet structures are auto-generated from [`src/config/protocol.json`](./src/config/protocol.json) into TypeScript definitions under [`src/packets/`](./src/packets).  
 
 This means you get **full IntelliSense and type-safety** when working with packets:
 
@@ -63,42 +63,29 @@ client.on("text", (packet) => {
 
 ---
 
-## Development (Yarn + Turbo)
-
-- Install dependencies: `yarn install`
-- Type-check and build: `yarn turbo run build`
-- Bundle (depends on build): `yarn turbo run bundle`
-- Type-check only: `yarn turbo run lint`
-
----
-
-## Roadmap
+## 🗺️ Roadmap
 
 - [x] Nethernet Support
   - Fully Supported
-- [x] API Documentation
-  - FAQ Soon
-- [x] Move the entire Codec in it's own REPO
-  - https://github.com/AtomicTS/Atomic-Codec
-- [ ] Atomic-Auth & Atomic-Realms
+- [ ] API & FAQ Documentation
 - [ ] **Future Enhancements**
-  - Consider adding proxy support (client + server pass-through).
+  - Consider adding proxy support (client ↔ server pass-through).
   - Explore server implementation (stretch goal).
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Feel free to open issues and pull requests to improve Atomic Protocol.
 
 ---
 
-## Authors
+## 👥 Authors
 
 - **[Serial-V](https://github.com/Serial-V)**
 
 ---
 
-## License
+## 📜 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details.

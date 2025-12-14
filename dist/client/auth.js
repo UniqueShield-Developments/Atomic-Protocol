@@ -14,51 +14,33 @@ var AuthenticationType;
 const realmAuth = async (options) => {
     return new Promise(async (resolve, reject) => {
         try {
-            //Conditional auth token acquisition
-            const authflow = options.authflow;
-            const usesAuthflow = typeof authflow?.getXboxToken === "function";
-            const auth = usesAuthflow
-                ? await authflow.getXboxToken(config_1.config.parties.realm, true)
-                : authflow.realms ?? authflow;
-            if (!auth?.XSTSToken || !auth?.userHash)
-                throw errors_1.Errors.noTokens();
+            const token = options.tokens.realms;
             if (options.inviteCode)
                 await acceptInvite(options.inviteCode);
             await OptIn(options);
-            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
             const getAddress = async (realmId) => {
-                const attempts = options.retryOnUnavailableRealm ? 2 : 1;
-                const delay = options.unavailableRealmRetryDelay ?? 20000;
-                for (let attempt = 1; attempt <= attempts; attempt++) {
-                    logger_1.Logger.debug(`Fetching realm: ${realmId}'s address (attempt ${attempt})`, options.debug);
-                    const fetchResponse = await fetch(config_1.config.endpoints.address(realmId), {
-                        method: "GET",
-                        headers: {
-                            Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
-                            ...config_1.config.realmHeaders
-                        }
-                    });
-                    if (fetchResponse.ok) {
-                        const json = await fetchResponse.json();
-                        if (json.networkProtocol === "NETHERNET") {
-                            return json.address;
-                        }
-                        const [host, port] = json?.address?.split(":");
-                        return { host, port };
+                logger_1.Logger.debug(`Fetching realm: ${realmId}'s address`, options.debug);
+                const fetchResponse = await fetch(config_1.config.endpoints.address(realmId), {
+                    method: "GET",
+                    headers: {
+                        Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
+                        ...config_1.config.realmHeaders
                     }
-                    if (fetchResponse.status === 503 && attempt < attempts) {
-                        logger_1.Logger.debug(`Realm unavailable, retrying in ${delay}ms`, options.debug);
-                        await sleep(delay);
-                        continue;
-                    }
+                });
+                if (!fetchResponse.ok)
                     throw errors_1.Errors.noRealm(fetchResponse.status, fetchResponse.statusText);
+                const json = await fetchResponse.json();
+                if (json.networkProtocol === "NETHERNET") {
+                    return json.address;
                 }
+                const [host, port] = json?.address?.split(":");
+                return { host, port };
             };
             async function acceptInvite(code) {
                 const fetchResponse = await fetch(config_1.config.endpoints.acceptInvite(code), {
                     method: "POST",
                     headers: {
-                        Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
+                        Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`,
                         ...config_1.config.realmHeaders
                     }
                 });
@@ -94,29 +76,20 @@ const realmAuth = async (options) => {
 exports.realmAuth = realmAuth;
 const authenticate = async (client, options) => {
     try {
-        const authflow = options.authflow;
-        const usesAuthflow = typeof authflow?.getMinecraftBedrockToken === "function";
-        let chains;
-        if (usesAuthflow) {
+        const token = options.tokens.bedrock;
+        const headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'MCPE/UWP',
+            Authorization: `XBL3.0 x=${token.userHash};${token.XSTSToken}`
+        };
+        const response = await fetch("https://multiplayer.minecraft.net/authentication", {
+            method: 'POST',
+            headers,
             //@ts-ignore
-            chains = chains = await authflow.getMinecraftBedrockToken(client.clientX509).catch((e) => {
-                throw e;
-            });
-        }
-        else {
-            const response = await fetch(config_1.config.endpoints.authenticate, {
-                method: "POST",
-                headers: {
-                    ...config_1.config.realmHeaders,
-                    Authorization: `XBL3.0 x=${authflow.bedrock.userHash};${authflow.bedrock.XSTSToken}`
-                },
-                //@ts-ignore
-                body: JSON.stringify({ identityPublicKey: client.clientX509 })
-            });
-            if (!response.ok)
-                throw errors_1.Errors.noTokens();
-            chains = (await response.json()).chain;
-        }
+            body: JSON.stringify({ identityPublicKey: client.clientX509 })
+        });
+        const { chain: chains } = await response.json();
+        //@ts-ignore
         const jwt = chains[1];
         const [_, payload, __] = jwt.split('.').map((k) => Buffer.from(k, 'base64'));
         const xboxProfile = JSON.parse(String(payload));
@@ -139,20 +112,8 @@ function postAuthenticate(client, profile, chains) {
     client.accessToken = chains;
     client.emit('session');
 }
-/**
- * Opts the player into realm story features for the given realm
- * @param options Contains the authflow/token data and the target `realmId`.
- * @returns Promise with request outcome, including status code and optional response body when failed.
- */
 async function OptIn(options) {
-    //Conditional auth token acquisition
-    const authflow = options.authflow;
-    const usesAuthflow = typeof authflow?.getXboxToken === "function";
-    const auth = usesAuthflow
-        ? await authflow.getXboxToken(config_1.config.parties.realm, true)
-        : authflow.realms ?? { ...options.authflow };
-    if (!auth.XSTSToken || !auth.userHash)
-        throw errors_1.Errors.noTokens();
+    const tokens = options.tokens.realms;
     let attempt = 0;
     while (true) {
         attempt++;
@@ -164,7 +125,7 @@ async function OptIn(options) {
                 method: "POST",
                 headers: {
                     ...config_1.config.realmHeaders,
-                    Authorization: `XBL3.0 x=${auth.userHash};${auth.XSTSToken}`,
+                    Authorization: `XBL3.0 x=${tokens.userHash};${tokens.XSTSToken}`,
                 },
                 body: JSON.stringify({
                     autostories: true,

@@ -5,7 +5,7 @@ export declare const config: {
     deviceModel: string;
     connectTimeout: number;
     autoInitPlayer: boolean;
-    ignoredPackets: never[];
+    ignoredPackets: number[];
     parties: {
         xbox: string;
         realm: string;
@@ -23,7 +23,6 @@ export declare const config: {
         worlds: string;
         address: (realmId: number) => string;
         acceptInvite: (code: string) => string;
-        authenticate: string;
     };
 };
 export declare const defaultOptions: {

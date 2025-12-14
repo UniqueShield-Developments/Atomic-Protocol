@@ -1,4 +1,4 @@
-import { Events } from "atomic-codec";
+import { Events } from '../Events';
 import { ClientOptions } from "../types";
 import { Connection } from "./connection";
 export declare class Client extends Connection {

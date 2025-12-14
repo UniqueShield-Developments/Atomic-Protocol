@@ -8,11 +8,8 @@ exports.config = {
     deviceModel: "AtomicTS",
     connectTimeout: 9000,
     autoInitPlayer: true,
-    //Packets need fixing
     ignoredPackets: [
-    // 0x91, //145
-    // 0xC0, //192
-    // 0x4c, //76
+        0x91
     ],
     parties: {
         xbox: "http://xboxlive.com",
@@ -22,7 +19,7 @@ exports.config = {
         "Cache-Control": "no-cache",
         Charset: "utf-8",
         "Content-Type": "application/json",
-        "Client-Version": "1.21.130",
+        "Client-Version": "1.21.124",
         "User-Agent": "MCPE/UWP",
         "Accept-Language": "en-US",
         "Accept-Encoding": "gzip, deflate, br"
@@ -30,8 +27,7 @@ exports.config = {
     endpoints: {
         worlds: "https://pocket.realms.minecraft.net/worlds",
         address: (realmId) => `https://pocket.realms.minecraft.net/worlds/${realmId}/join`,
-        acceptInvite: (code) => `https://bedrock.frontendlegacy.realms.minecraft-services.net/invites/v1/link/accept/${code}`,
-        authenticate: `https://multiplayer.minecraft.net/authentication`
+        acceptInvite: (code) => `https://bedrock.frontendlegacy.realms.minecraft-services.net/invites/v1/link/accept/${code}`
     }
 };
 exports.defaultOptions = {

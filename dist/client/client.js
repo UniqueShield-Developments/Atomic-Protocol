@@ -136,8 +136,10 @@ class Client extends connection_1.Connection {
     }
     ;
     readPacket(packet) {
-        // if (config.ignoredPackets.includes(packet[0])) return;
-        logger_1.Logger.debug(`Received Packet: ${packet[0]}`, config_1.config.debug);
+        if (config_1.config.ignoredPackets.includes(packet[0]))
+            return logger_1.Logger.debug(`Ignored Packet: ${packet[0]}`, this.options.debug);
+        //Debugging Purposes
+        // console.log(packet[0]);
         const des = this.deserializer.parsePacketBuffer(packet);
         const pakData = { name: des.data.name, params: des.data.params };
         //Startup
@@ -161,6 +163,14 @@ class Client extends connection_1.Connection {
                 break;
             case 'start_game':
                 this.startGameData = pakData.params;
+            case 'item_registry':
+                const shield = pakData.params.itemstates?.find((entry) => entry.name === "minecraft:shield");
+                if (shield) {
+                    //@ts-ignore
+                    this.serializer.proto.setVariable('ShieldItemID', shield.runtime_id);
+                    //@ts-ignore
+                    this.deserializer.proto.setVariable('ShieldItemID', shield.runtime_id);
+                }
                 break;
             case 'play_status':
                 if (this.status === types_1.clientStatus.Authenticating) {
@@ -169,9 +179,14 @@ class Client extends connection_1.Connection {
                 }
                 this.onPlayStatus(pakData.params);
                 break;
+            case 'packet_violation_warning': {
+                const violation = pakData.params;
+                logger_1.Logger.debug(`Packet violation warning id=${violation.packet_id} severity=${violation.severity} type=${violation.violation_type} reason=${violation.reason}`, this.options.debug);
+                this.emit('packet_violation_warning', violation);
+                break;
+            }
             default:
                 if (this.status !== types_1.clientStatus.Initializing && this.status !== types_1.clientStatus.Initialized) {
-                    this.status = types_1.clientStatus.Initialized; // sometimes the status is not changed to initialized
                     console.error(`Can't accept ${des.data.name}, client not authenticated yet : ${this.status}`);
                     break;
                 }

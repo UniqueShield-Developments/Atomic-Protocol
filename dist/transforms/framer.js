@@ -34,8 +34,6 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const zlib = __importStar(require("zlib"));
-const config_1 = require("../config/config");
-const logger_1 = require("../utils/logger");
 const varints_1 = require("../utils/varints");
 class Framer {
     constructor(client) {
@@ -91,8 +89,7 @@ class Framer {
                 decompressed = Framer.decompress(buffer[0], buffer.slice(1));
             }
             catch (e) {
-                //Fallback with debug context
-                logger_1.Logger.debug(`[Framer] decompress failed label=decode ready=true compressionHeader=${buffer[0]} bufferLength=${buffer.byteLength}`, config_1.config.debug);
+                //Fallback
                 client.emit?.("error", e);
                 return [];
             }
@@ -102,11 +99,10 @@ class Framer {
                 decompressed = Framer.decompress(client.compressionAlgorithm, buffer);
             }
             catch (e) {
-                logger_1.Logger.debug(`[Framer] decompress failed label=decode ready=false compression=${client.compressionAlgorithm} bufferLength=${buffer.byteLength}`, config_1.config.debug);
                 decompressed = buffer;
             }
         }
-        return Framer.getPackets(decompressed, { label: "decode" });
+        return Framer.getPackets(decompressed);
     }
     encode() {
         const buf = Buffer.concat(this.packets);
@@ -141,41 +137,16 @@ class Framer {
     getBuffer() {
         return Buffer.concat(this.packets);
     }
-    static logPacketDebug(reason, buffer, offset, value, size, label) {
-        const previewLength = 96;
-        const preview = buffer.subarray(offset, Math.min(buffer.byteLength, offset + previewLength)).toString("hex");
-        const msg = `[Framer] ${reason}` +
-            ` label=${label ?? "getPackets"}` +
-            ` bufferLength=${buffer.byteLength}` +
-            ` offset=${offset}` +
-            ` varInt=${value ?? "n/a"}` +
-            ` varIntSize=${size ?? "n/a"}` +
-            ` preview=${preview}`;
-        logger_1.Logger.debug(msg, config_1.config.debug);
-    }
-    static getPackets(buffer, options = {}) {
+    static getPackets(buffer) {
         const maxPacket = 2 * 1024 * 1024;
         const packets = [];
         let offset = 0;
-        const label = options.label ?? "getPackets";
         while (offset < buffer.byteLength) {
-            let value;
-            let size;
-            try {
-                const parsed = (0, varints_1.readVarInt)(buffer, offset);
-                value = parsed.value;
-                size = parsed.size;
-            }
-            catch (err) {
-                this.logPacketDebug("Failed to read varint", buffer, offset, null, null, label);
-                throw err;
-            }
+            const { value, size } = (0, varints_1.readVarInt)(buffer, offset);
             if (value < 0 || value > maxPacket) {
-                this.logPacketDebug("Packet too large/invalid", buffer, offset, value, size, label);
                 throw new Error(`Packet too large/invalid (${value} bytes)`);
             }
             if (offset + size + value > buffer.byteLength) {
-                this.logPacketDebug("Truncated packet payload", buffer, offset, value, size, label);
                 throw new Error("Truncated packet payload");
             }
             const dec = Buffer.allocUnsafe(value);
